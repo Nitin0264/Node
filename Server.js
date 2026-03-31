@@ -1,29 +1,38 @@
-import express from "express"
+import express from "express";
 import multer from "multer";
+import path from "path"; // Useful for handling paths safely
+
+
 let app = express();
 
+// FIX 1: Tell Express how to render files
+app.set("view engine", "ejs"); 
 
-multer.diskStorage({
-  destination:function(req,file,cb){
-    cb(null,`${process.cwd()}/upload`)
-  },
-  filename:function(req,file,cb)
-  {
-    cb(null,file.originalname);
-  },
-  
-})
+let storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        // Ensure this folder exists on your computer!
+        cb(null, `${process.cwd()}/upload`);
+    },
+    filename: function(req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
 
-let upload = multer({storage})
+let upload = multer({ storage });
 
-app.get("/",(req,res)=>
-{
-  res.render("upload")
-})
+// GET: Shows the page
+app.get("/", (req, res) => {
+    res.render("upload"); 
+});
 
-app.post("/upload",upload(req,res)=>
-{
-  console.log("upload")
+// POST: Handles the file
+// Note: "img1" must match the 'name' attribute in your HTML <input>
+app.post("/upload", upload.single("img1"), (req, res) => {
+    console.log("File received!");
+    console.log(req.file);
+    res.send("Upload successful!"); // Send a response so the browser doesn't hang
+});
 
-})
-app.listen(8000,() => console.log("Running"))
+app.listen(8000, () => {
+    console.log("Server running on http://localhost:8000");
+});
